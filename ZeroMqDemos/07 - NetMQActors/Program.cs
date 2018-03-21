@@ -15,6 +15,7 @@ namespace NetMQActors
     {
         static void Main(string[] args)
         {
+            /**
 
             //Round 1 : Should work fine
             EchoShimHandler echoShimHandler = new EchoShimHandler();
@@ -61,30 +62,36 @@ namespace NetMQActors
                 expectedEchoHandlerResult, result);
             actor.Dispose();
 
-
+            ***/
 
             //Round 4 : Should work fine
-            AccountShimHandler accountShimHandler = new AccountShimHandler();
+            var accountShimHandler = new AccountShimHandler();
 
-            AccountAction accountAction = new AccountAction(TransactionType.Credit, 10);
-            Account account = new Account(1, "Test Account", "11223", 0);
+            var accountAction = new AccountAction(TransactionType.Credit, 10m);
+            var account = new Account(1, "Test Account", "11223", 0m);
 
-            Actor accountActor = new Actor(NetMQContext.Create(), accountShimHandler,
-                new object[] { JsonConvert.SerializeObject(accountAction) });
-            accountActor.SendMore("AMEND ACCOUNT");
-            accountActor.Send(JsonConvert.SerializeObject(account));
-            Account updatedAccount = 
-                JsonConvert.DeserializeObject<Account>(accountActor.ReceiveString());
-            Console.WriteLine("ROUND4");
-            Console.WriteLine("========================");
-            decimal expectedAccountBalance = 10.0m;
-            Console.WriteLine(
-                "Exected Account Balance: '{0}'\r\nGot : '{1}'\r\n" + 
-                "Are Same Account Object : '{2}'\r\n",
-                expectedAccountBalance, updatedAccount.Balance, 
-                ReferenceEquals(accountActor, updatedAccount));
-            accountActor.Dispose();
+            var accountActor = new Actor(NetMQContext.Create(), accountShimHandler, new[]
+            {
+                JsonConvert.SerializeObject(accountAction)
+            });
 
+            using (accountActor)
+            {
+
+                accountActor.SendMore("AMEND ACCOUNT");
+                accountActor.Send(JsonConvert.SerializeObject(account));
+
+                var updatedAccount = JsonConvert.DeserializeObject<Account>(accountActor.ReceiveString());
+
+                Console.WriteLine("ROUND4");
+                Console.WriteLine("========================");
+                var expectedAccountBalance = 10m;
+                Console.WriteLine(
+                    "Expected Account Balance: '{0}'\r\nGot : '{1}'\r\n" +
+                    "Are Same Account Object : '{2}'\r\n",
+                    expectedAccountBalance, updatedAccount.Balance,
+                    ReferenceEquals(accountActor, updatedAccount));
+            }
 
             Console.ReadLine();
         }

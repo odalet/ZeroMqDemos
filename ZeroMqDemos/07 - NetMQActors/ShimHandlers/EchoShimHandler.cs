@@ -21,9 +21,8 @@ namespace NetMQActors
     {
         public void Run(PairSocket shim, object[] args, CancellationToken token)
         {
-            if (args == null || args.Count() != 1 || (string)args[0] != "Hello World")
-                throw new InvalidOperationException(
-                    "Args were not correct, expected 'Hello World'");
+            if (args == null || args.Count() != 1 || (string)args[0] != "Hello World") throw new InvalidOperationException(
+                "Args were not correct, expected 'Hello World'");
 
             while (!token.IsCancellationRequested)
             {
@@ -45,14 +44,10 @@ namespace NetMQActors
 
                 if (msg[0].ConvertToString() == "ECHO")
                 {
-                    shim.Send(string.Format("ECHO BACK : {0}", 
+                    shim.Send(string.Format("ECHO BACK : {0}",
                         msg[1].ConvertToString()));
                 }
-                else
-                {
-                    throw NetMQException.Create("Unexpected command", 
-                        ErrorCode.EFAULT);
-                }
+                else throw NetMQException.Create("Unexpected command", ErrorCode.EFAULT);
             }
         }
     }

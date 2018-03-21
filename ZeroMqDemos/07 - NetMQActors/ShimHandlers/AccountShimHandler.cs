@@ -24,21 +24,18 @@ namespace NetMQActors
 
         private void AmmendAccount(AccountAction action, Account account)
         {
-            decimal currentAmount = account.Balance;
-            account.Balance = action.TransactionType == TransactionType.Debit
-                ? currentAmount - action.Amount
-                : currentAmount + action.Amount;
+            var currentAmount = account.Balance;
+            account.Balance = action.TransactionType == TransactionType.Debit ? 
+                currentAmount - action.Amount : 
+                currentAmount + action.Amount;
         }
 
         public void Run(PairSocket shim, object[] args, CancellationToken token)
         {
-            if (args == null || args.Count() != 1)
-                throw new InvalidOperationException(
-                    "Args were not correct, expected one argument");
+            if (args == null || args.Count() != 1) throw new InvalidOperationException(
+                "Args were not correct, expected one argument");
 
-            AccountAction accountAction = JsonConvert.DeserializeObject<AccountAction>(args[0].ToString());
-
-
+            var accountAction = JsonConvert.DeserializeObject<AccountAction>(args[0].ToString());
             while (!token.IsCancellationRequested)
             {
                 //Message for this actor/shim handler is expected to be 
@@ -59,16 +56,12 @@ namespace NetMQActors
 
                 if (msg[0].ConvertToString() == "AMEND ACCOUNT")
                 {
-                    string json = msg[1].ConvertToString();
-                    Account account = JsonConvert.DeserializeObject<Account>(json);
+                    var json = msg[1].ConvertToString();
+                    var account = JsonConvert.DeserializeObject<Account>(json);
                     AmmendAccount(accountAction, account);
                     shim.Send(JsonConvert.SerializeObject(account));
                 }
-                else
-                {
-                    throw NetMQException.Create("Unexpected command", 
-                        ErrorCode.EFAULT);
-                }
+                else throw NetMQException.Create("Unexpected command", ErrorCode.EFAULT);
             }
         }
     }
